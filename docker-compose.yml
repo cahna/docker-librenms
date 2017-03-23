@@ -1,0 +1,34 @@
+---
+version: "2"
+services:
+  librenms_mariadb:
+    image: mariadb:10.1
+    command: --innodb-file-per-table=1 --sql-mode ''
+    volumes:
+      - data/mariadb:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: librenms
+      MYSQL_USER: librenms 
+      MYSQL_PASSWORD: CHANGEME
+      MYSQL_ROOT_PASSWORD: CHANGEME
+
+  librenms:
+    image: cahna/librenms
+    environment:
+      LIBRENMS_SNMPD_GROUP_NAME: CHANGEME
+      LIBRENMS_SNMPD_GROUP_SECRET: CHANGEME
+    links:
+      - librenms_mariadb:librenms_mariadb
+    volumes_from:
+      - librenms_data
+    ports:
+      - "127.0.0.1:8080:80"
+
+  librenms_data:
+    image: cahna/librenms
+    command: chown -R librenms:librenms /opt/librenms
+    volumes:
+#      - data/config.php:/opt/librenms/config.php  # Update with your configuration after running install.php
+      - data/logs:/opt/librenms/logs
+      - data/rrd:/opt/librenms/rrd
+
